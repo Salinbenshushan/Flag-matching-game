@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+  <meta charset="UTF-8">
+  <title>משחק התאמת דגלים</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      direction: rtl;
+      text-align: center;
+      background-color: #f0f8ff;
+      padding: 20px;
+    }
+    h1 {
+      margin-bottom: 10px;
+    }
+    .flag {
+      width: 150px;
+      margin: 10px;
+      border: 3px solid transparent;
+      cursor: pointer;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+    .flag:hover {
+      transform: scale(1.05);
+    }
+    #fact {
+      font-size: 20px;
+      margin: 20px 0;
+    }
+    #result, #score, #endMessage {
+      font-size: 18px;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+    .button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 16px;
+      display: none;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>התאם את הדגל לעובדה</h1>
+
+  <div id="score">ניקוד: 0</div>
+  <div id="fact">טוען שאלה...</div>
+
+  <div id="flagsContainer"></div>
+
+  <div id="result"></div>
+  <button id="nextBtn" class="button" onclick="nextQuestion()">לשאלה הבאה</button>
+  <div id="endMessage"></div>
+  <button id="restartBtn" class="button" onclick="restartGame()">שחק שוב 🔁</button>
+
+  <script>
+    const allQuestions = [
+      {
+        fact: "במדינה הזו מדברים פורטוגזית למרות שרוב היבשת מדברת ספרדית.",
+        answer: "br",
+        options: ["br", "ar", "cl"]
+      },
+      {
+        fact: "מדינה זו כוללת את הר פוג'י והיא ידועה בטכנולוגיה המתקדמת שלה.",
+        answer: "jp",
+        options: ["jp", "kr", "cn"]
+      },
+      {
+        fact: "מדינה זו נחשבת לסטארט-אפ ניישן.",
+        answer: "il",
+        options: ["il", "us", "in"]
+      },
+      {
+        fact: "זוהי המדינה הגדולה ביותר בעולם לפי שטח.",
+        answer: "ru",
+        options: ["ru", "ca", "cn"]
+      },
+      {
+        fact: "המדינה הזו מפורסמת במגדל האייפל.",
+        answer: "fr",
+        options: ["fr", "it", "es"]
+      },
+      {
+        fact: "במדינה הזו חיים הקנגורו והקואלה.",
+        answer: "au",
+        options: ["au", "za", "nz"]
+      },
+      {
+        fact: "המדינה הזו ידועה בזכות הסושי והתרבות המסורתית שלה.",
+        answer: "jp",
+        options: ["jp", "th", "kr"]
+      },
+      {
+        fact: "המדינה הזו מפורסמת בביג בן ובמשפחת המלוכה.",
+        answer: "gb",
+        options: ["gb", "ie", "us"]
+      },
+      {
+        fact: "המדינה הזו שוכנת לחופי הים התיכון וכוללת את העיר תל אביב.",
+        answer: "il",
+        options: ["il", "eg", "gr"]
+      },
+      {
+        fact: "המדינה הזו מארחת את הקרנבל הגדול בעולם מדי שנה.",
+        answer: "br",
+        options: ["br", "mx", "es"]
+      }
+    ];
+
+    let questions = [];
+    let currentQuestion = 0;
+    let score = 0;
+
+    function shuffleArray(array) {
+      return array.sort(() => 0.5 - Math.random());
+    }
+
+    function loadQuestion() {
+      const q = questions[currentQuestion];
+      document.getElementById("fact").innerText = q.fact;
+      document.getElementById("result").innerText = "";
+      document.getElementById("nextBtn").style.display = "none";
+
+      const flagsDiv = document.getElementById("flagsContainer");
+      flagsDiv.innerHTML = "";
+
+      shuffleArray(q.options).forEach(code => {
+        const img = document.createElement("img");
+        img.src = `https://flagcdn.com/w320/${code}.png`;
+        img.className = "flag";
+        img.alt = code;
+        img.onclick = () => checkAnswer(code);
+        flagsDiv.appendChild(img);
+      });
+    }
+
+    function checkAnswer(selectedCode) {
+      const correct = questions[currentQuestion].answer;
+      const result = document.getElementById("result");
+
+      if (selectedCode === correct) {
+        result.innerText = "תשובה נכונה! 🎉";
+        result.style.color = "green";
+        score++;
+      } else {
+        result.innerText = "טעות! נסה שוב בפעם הבאה.";
+        result.style.color = "red";
+      }
+
+      document.getElementById("score").innerText = `ניקוד: ${score}`;
+      document.getElementById("nextBtn").style.display = "inline-block";
+
+      // ביטול קליקים נוספים
+      const flags = document.querySelectorAll(".flag");
+      flags.forEach(flag => flag.onclick = null);
+    }
+
+    function nextQuestion() {
+      currentQuestion++;
+      if (currentQuestion < questions.length) {
+        loadQuestion();
+      } else {
+        endGame();
+      }
+    }
+
+    function endGame() {
+      document.getElementById("fact").style.display = "none";
+      document.getElementById("flagsContainer").style.display = "none";
+      document.getElementById("result").style.display = "none";
+      document.getElementById("nextBtn").style.display = "none";
+      document.getElementById("endMessage").innerText = `סיימת את המשחק! ניקוד סופי: ${score} מתוך 10 🎯`;
+      document.getElementById("restartBtn").style.display = "inline-block";
+    }
+
+    function restartGame() {
+      questions = shuffleArray([...allQuestions]);
+      currentQuestion = 0;
+      score = 0;
+      document.getElementById("fact").style.display = "block";
+      document.getElementById("flagsContainer").style.display = "block";
+      document.getElementById("result").style.display = "block";
+      document.getElementById("endMessage").innerText = "";
+      document.getElementById("restartBtn").style.display = "none";
+      document.getElementById("score").innerText = `ניקוד: ${score}`;
+      loadQuestion();
+    }
+
+    // התחלה
+    restartGame();
+  </script>
+
+</body>
+</html>
